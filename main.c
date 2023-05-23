@@ -7,13 +7,25 @@ void reset(short* board){
 	Reset the game, clear the chessboard.
 	
 	Args:
-		
+		- short *board (array's address): chessboard's status
+	
+	Results:
+		- None, set all blocks on the chessboard to zero. 
 */
 	for (short i=0; i<9; i++)
 		board[i] = 0;
 }
 
 void show(short *board){
+/*
+	Print the chessboard on the console.
+
+	Args:
+		- short *board (array's address): chessboard's status
+	
+	Results:
+		- None. Only printing.
+*/
 	short loc;
 	printf("┼───┼───┼───┼\n");
 	for (short i=0; i<3; i++){
@@ -34,6 +46,17 @@ void show(short *board){
 }
 
 void get_available_actions(short *board, short *result, short *length){
+/*
+	Save all available actions into the "result" array.
+
+	Args:
+		- short *board (array's address): chessboard's status
+		- short *result (array's address): To save all available actions.
+		- short *length (integer's pointer): To save the number of available actions.
+	
+	Results:
+		- None. All available actions are saved into "result" and the number of actions is saved in "length"
+*/
 	short index = 0;	
 	for (int i=0; i<9; i++)
 		if (board[i] == 0)

@@ -27,12 +27,12 @@ struct action{
 
 /*
 	Reset the game, clear the chessboard.
-	
+
 	Args:
 		- short *board (array's address): chessboard's status
-	
+
 	Results:
-		- None, set all blocks on the chessboard to zero. 
+		- None, set all blocks on the chessboard to zero.
 */
 void reset(short* board){
 	for (short i=0; i<9; i++)
@@ -44,7 +44,7 @@ void reset(short* board){
 
 	Args:
 		- short *board (array's address): chessboard's status
-	
+
 	Results:
 		- None. Only printing.
 */
@@ -75,12 +75,12 @@ void show(short *board){
 		- short *board (array's address): chessboard's status
 		- short *result (array's address): To save all available actions.
 		- short *length (integer's pointer): To save the number of available actions.
-	
+
 	Results:
 		- None. All available actions are saved into "result" and the number of actions is saved in "length"
 */
 void get_available_actions(short *board, short *result, short *length){
-	short index = 0;	
+	short index = 0;
 	for (int i=0; i<9; i++)
 		if (board[i] == 0)
 			result[index++] = i;
@@ -102,14 +102,14 @@ short get_winner(short *board){
 		a = PATHS[i][0]; b = PATHS[i][1]; c = PATHS[i][2];
 		if ((board[a] == board[b]) && (board[b] == board[c]) && (board[a] != 0)){
 			return board[a];
-		} 
+		}
 	}
 	return 0;
 }
 
 /*
 	Hash chesstable's status into hash.
-	
+
 	Args:
 		- short *board (array's address): chessboard's status
 
@@ -131,14 +131,14 @@ int state_hash(short *board){
 
 /*
 	Act on the chessboard.
-	
+
 	Args:
 		- short *board (array's address): chessboards' status
 		- struct action *a (a action's pointer): include player & choose loc
 		- int *state (pointer): for return. To save the chessboard's state hash which after doing this action
 		- int *reward (pointer): for return. To save the number of rewards which the player gets after doing this action.
 		- short *winner (pointer): for return. To save the winner in this action. If haven't finish, it will be zero.
-	
+
 	Results:
 		- None. Save in state & reward & winner
 */
@@ -160,7 +160,7 @@ void act(short *board, struct action *a, int *state, int *reward, short *winner)
 	Args:
 		- short *arr (array's address)
 		- short length (integer): array's length
-	
+
 	Results:
 		- short index (integer): the index with the max value
 */
@@ -184,13 +184,13 @@ short argmax(short *arr, short length){
 		- short *table (array's address): state table for Q-Learning
 		- short *board (array's address): chessboards' status
 		- int state (integer, state hash): hash for board's status
-	
+
 	Results:
 		- short best_choice
 */
 short bot_choose_action(short *table, short *board, int state){
 
-	// get available actions for choosing	
+	// get available actions for choosing
 	short available_actions[9];
 	short available_actions_length;
 	get_available_actions(board, available_actions, available_actions_length);
@@ -209,7 +209,7 @@ short bot_choose_action(short *table, short *board, int state){
 	}
 	best_choice = argmax(available_actions_state, index);
 	best_choice = available_actions_state_index[best_choice];
-	
+
 	// Epsilon-Greedy
 	// If random number > EPSILON   ->   random a action
 	// If random number < EPSILON   ->   choose the best action in this state.
@@ -218,7 +218,7 @@ short bot_choose_action(short *table, short *board, int state){
 		best_choice = rand() % ACTION_NUM;
 	}
 
-	return best_choice;
+    return best_choice;
 }
 
 int main(){
@@ -237,7 +237,7 @@ int main(){
 	show(board);
 	winner = get_winner(board);
 	printf("winner: %d\n", winner);
-	
+
 	get_available_actions(board, available_actions, &available_actions_length);
 	for (short i=0; i<available_actions_length; i++){
 		printf("%d ", available_actions[i]);

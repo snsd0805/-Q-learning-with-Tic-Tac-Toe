@@ -1,8 +1,18 @@
 #include <stdio.h>
 #include <math.h>
+#include <limits.h>
+#include <time.h>
+#include <stdlib.h>
 
 #define BOT_SYMBOL 1
 #define OPPONENT_SYMBOL 2
+
+#define EPSILON 0.9						// Epsilon-greedy
+#define LR 0.1							// learning rate
+#define LAMBDA 0.9						// discount factor
+
+#define STATE_NUM 19683
+#define ACTION_NUM 9
 
 short PATHS[8][3] = {
 	{0, 1, 2}, {3, 4, 5}, {6, 7, 8},
@@ -118,6 +128,7 @@ int state_hash(short *board){
 	return hash;
 }
 
+
 /*
 	Act on the chessboard.
 	
@@ -143,9 +154,75 @@ void act(short *board, struct action *a, int *state, int *reward, short *winner)
 		*reward = 0;
 }
 
-// int choose_action
+/*
+	Return the index with the max value in the array
+
+	Args:
+		- short *arr (array's address)
+		- short length (integer): array's length
+	
+	Results:
+		- short index (integer): the index with the max value
+*/
+short argmax(short *arr, short length){
+	short ans = -1, max = SHRT_MIN;
+	for (short i=0; i<length; i++){
+		if (arr[i] > max){
+			max = arr[i];
+			ans = i;
+		}
+	}
+	return ans;
+}
+
+/*
+	Choose the next action with Epsilon-Greedy.
+	EPSILON means the probability to choose the best action in this state from Q-Table.
+	(1-EPSILON) to random an action to do.
+
+	Args:
+		- short *table (array's address): state table for Q-Learning
+		- short *board (array's address): chessboards' status
+		- int state (integer, state hash): hash for board's status
+	
+	Results:
+		- short best_choice
+*/
+short bot_choose_action(short *table, short *board, int state){
+
+	// get available actions for choosing	
+	short available_actions[9];
+	short available_actions_length;
+	get_available_actions(board, available_actions, available_actions_length);
+
+	// use argmax() to find the best choise,
+	// first we should build an available_actions_state array for saving the state for all available choise.
+	short available_actions_state[9];
+	short available_actions_state_index[9];
+	short available_actions_state_length, index = 0;
+	short temp_index, best_choice;
+	for (short i=0; i<available_actions_length; i++){
+		temp_index = available_actions[i];
+		available_actions_state[index] = table[state * 9 + temp_index ];
+		available_actions_state_index[index] = temp_index;
+		index++;
+	}
+	best_choice = argmax(available_actions_state, index);
+	best_choice = available_actions_state_index[best_choice];
+	
+	// Epsilon-Greedy
+	// If random number > EPSILON   ->   random a action
+	// If random number < EPSILON   ->   choose the best action in this state.
+	double random_num = (double) rand() / (RAND_MAX + 1.0);
+	if (random_num > EPSILON){
+		best_choice = rand() % ACTION_NUM;
+	}
+
+	return best_choice;
+}
 
 int main(){
+	srand(time(NULL));
 	short board[9]= {0};			// tic tac toe's chessboard
 	short available_actions[9];
 	short available_actions_length;

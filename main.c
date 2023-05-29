@@ -7,15 +7,8 @@
 #include "q-learning.h"
 
 int main(){
-	short board[9]= {0};			// tic tac toe's chessboard
-    float table[STATE_NUM][ACTION_NUM];
-	short available_actions[9];
-	short available_actions_length;
-	short winner;
-    short choice, opponent_choice;
-    int state, _state;
-    int estimate_r, estimate_r_, real_r, r, opponent_r;
-    struct action a;
+	short board[9]= {0};			        // tic tac toe's chessboard
+    float table[STATE_NUM][ACTION_NUM];     // q-learning table
 
 	srand(time(NULL));
     init_table(&table[0][0]);

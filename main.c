@@ -14,6 +14,6 @@ int main(){
     init_table(&table[0][0]);
 
     run(&table[0][0], board, false, 10000, false);
-    run(&table[0][0], board, true, 1000000, false);
+    run(&table[0][0], board, true, EPISODE_NUM, false);
     run(&table[0][0], board, false, 10000, false);
 }

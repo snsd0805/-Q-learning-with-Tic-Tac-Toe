@@ -1,0 +1,26 @@
+name: format
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "**.c"
+      - "**.h"
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+      - name: Install clang-format
+        run: pip install clang-format
+      - name: Format with clang-format
+        run: clang-format -i *.c *.h
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "style(format): run clang-format"

@@ -1,9 +1,9 @@
 #define BOT_SYMBOL 1
 #define OPPONENT_SYMBOL 2
 
-#define EPSILON 0.9						// Epsilon-greedy
-#define LR 0.1							// learning rate
-#define LAMBDA 0.9						// discount factor
+#define EPSILON 0.9 // Epsilon-greedy
+#define LR 0.1 // learning rate
+#define LAMBDA 0.9 // discount factor
 
 #define STATE_NUM 19683
 #define ACTION_NUM 9

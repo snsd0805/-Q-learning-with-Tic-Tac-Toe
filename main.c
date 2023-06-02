@@ -7,13 +7,21 @@
 #include "q-learning.h"
 
 int main(){
-	short board[9]= {0};			        // tic tac toe's chessboard
-    float table[STATE_NUM][ACTION_NUM];     // q-learning table
+	short board[ROW_NUM][COL_NUM]= {0};
+    short winner;
+    struct Node ** map;      // pointer to pointer, hash table
+    bool find;
+    float state[ACTION_NUM];
 
-	srand(time(NULL));
-    init_table(&table[0][0]);
+    srand(time(NULL));
 
-    run(&table[0][0], board, false, 10000, false);
-    run(&table[0][0], board, true, EPISODE_NUM, false);
-    run(&table[0][0], board, false, 10000, false);
+    // init hash table
+    map = malloc(TABLE_SIZE * sizeof(struct Node*));
+    for (int i=0; i<TABLE_SIZE; i++){
+        map[i] = NULL;
+    }
+
+    run(map, &board[0][0], false, 10000, false);
+    run(map, &board[0][0], true, EPISODE_NUM, false);
+    run(map, &board[0][0], false, 10000, true);
 }

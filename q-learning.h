@@ -1,6 +1,7 @@
+#include "hash-table.h"
+
 short float_argmax(float *arr, short length);
-short bot_choose_action(float *table, short *board, int state);
-short opponent_random_action(float *table, short *board, int state);
-void init_table(float *table);
-float get_estimate_reward(float *table, short *board, int state);
-void run(float *table, short *board, bool train, int times, bool plot);
+short bot_choose_action(struct Node **map, short *board, char *state);
+short opponent_random_action(short *board);
+float get_estimate_reward(struct Node **map, short *board, char *state);
+void run(struct Node **map, short *board, bool train, int times, bool plot);

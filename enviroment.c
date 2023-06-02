@@ -175,12 +175,12 @@ short get_winner(short* board)
 /*
     Hash chesstable's status into hash.
 
-        Args:
-            - short *board (array's address): chessboard's status
-            - char *hash (a string): size is BIGNUM_LEN, the hash will be wrote here
+    Args:
+        - short *board (array's address): chessboard's status
+        - char *hash (a string): size is BIGNUM_LEN, the hash will be wrote here
 
-        Results:
-            - None.
+    Results:
+        - None.
 */
 void state_hash(short* board, char* hash)
 {

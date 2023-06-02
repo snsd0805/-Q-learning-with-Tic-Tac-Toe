@@ -6,10 +6,11 @@
 #include <stdlib.h>
 #include <time.h>
 
-int main(){
-	short board[ROW_NUM][COL_NUM]= {0};
+int main()
+{
+    short board[ROW_NUM][COL_NUM] = { 0 };
     short winner;
-    struct Node ** map;      // pointer to pointer, hash table
+    struct Node** map; // pointer to pointer, hash table
     bool find;
     float state[ACTION_NUM];
 
@@ -17,7 +18,7 @@ int main(){
 
     // init hash table
     map = malloc(TABLE_SIZE * sizeof(struct Node*));
-    for (int i=0; i<TABLE_SIZE; i++){
+    for (int i = 0; i < TABLE_SIZE; i++) {
         map[i] = NULL;
     }
 

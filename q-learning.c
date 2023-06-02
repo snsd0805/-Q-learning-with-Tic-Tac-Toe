@@ -35,45 +35,46 @@ short float_argmax(float* arr, short length)
     EPSILON means the probability to choose the best action in this state from Q-Table.
     (1-EPSILON) to random an action to do.
 
-	Args:
-		- short *table (array's address): state table for Q-Learning
-		- short *board (array's address): chessboards' status
-		- char *state (string, state hash): hash for board's status
+        Args:
+                - short *table (array's address): state table for Q-Learning
+                - short *board (array's address): chessboards' status
+                - char *state (string, state hash): hash for board's status
 
     Results:
         - short best_choice
 */
-short bot_choose_action(struct Node **map, short *board, char *state){
+short bot_choose_action(struct Node** map, short* board, char* state)
+{
 
-	// get available actions for choosing
-	short available_actions[ACTION_NUM];
-	short available_actions_length;
-	get_available_actions(board, available_actions, &available_actions_length);
+    // get available actions for choosing
+    short available_actions[ACTION_NUM];
+    short available_actions_length;
+    get_available_actions(board, available_actions, &available_actions_length);
 
-	// use argmax() to find the best choise,
-	// first we should build an available_actions_state array for saving the state for all available choise.
-	float available_actions_state[ACTION_NUM];
-	short available_actions_state_index[ACTION_NUM];
-	short available_actions_state_length, index = 0;
-	short temp_index, best_choice;
-	bool zeros = true;
+    // use argmax() to find the best choise,
+    // first we should build an available_actions_state array for saving the state for all available choise.
+    float available_actions_state[ACTION_NUM];
+    short available_actions_state_index[ACTION_NUM];
+    short available_actions_state_length, index = 0;
+    short temp_index, best_choice;
+    bool zeros = true;
     bool find;
     float state_weights[ACTION_NUM];
 
     // find weights in the hash table
     search(map, state, &find, state_weights);
     if (!find) {
-        for (short i=0; i<ACTION_NUM; i++){
+        for (short i = 0; i < ACTION_NUM; i++) {
             state_weights[i] = 0.0;
         }
     }
 
     // get the best choice
-    for (short i=0; i<available_actions_length; i++){
+    for (short i = 0; i < available_actions_length; i++) {
         temp_index = available_actions[i];
 
         available_actions_state[index] = state_weights[temp_index];
-        if (available_actions_state[index] != 0.0){
+        if (available_actions_state[index] != 0.0) {
             zeros = false;
         }
         available_actions_state_index[index] = temp_index;
@@ -97,12 +98,13 @@ short bot_choose_action(struct Node **map, short *board, char *state){
     Opponent random choose a action to do.
 
     Args:
-		- short *board (array's address): chessboards' status
+                - short *board (array's address): chessboards' status
 
     Results:
         - short choice (integer): random, -1 means no available action to choose
 */
-short opponent_random_action(short *board){
+short opponent_random_action(short* board)
+{
 
     // get available actions for choosing
     short available_actions[ACTION_NUM];
@@ -151,7 +153,8 @@ short opponent_random_action(short *board){
     Results:
         - int max_reward
 */
-float get_estimate_reward(struct Node **map, short *board, char *state){
+float get_estimate_reward(struct Node** map, short* board, char* state)
+{
     short available_actions[ACTION_NUM];
     short available_action_length;
     get_available_actions(board, available_actions, &available_action_length);
@@ -161,14 +164,14 @@ float get_estimate_reward(struct Node **map, short *board, char *state){
     bool find;
     search(map, state, &find, state_weights);
     if (!find) {
-        for (short i=0; i<ACTION_NUM; i++){
+        for (short i = 0; i < ACTION_NUM; i++) {
             state_weights[i] = 0.0;
         }
     }
 
-	float available_actions_state[ACTION_NUM];
-    for (short i=0; i<available_action_length; i++){
-        available_actions_state[i] = state_weights[available_actions[i]];   // table[state][available_actions[i]]
+    float available_actions_state[ACTION_NUM];
+    for (short i = 0; i < available_action_length; i++) {
+        available_actions_state[i] = state_weights[available_actions[i]]; // table[state][available_actions[i]]
     }
 
     short ans_index;
@@ -189,10 +192,11 @@ float get_estimate_reward(struct Node **map, short *board, char *state){
     Results:
         - None
 */
-void run(struct Node **map, short *board, bool train, int times, bool plot){
-	short available_actions[ACTION_NUM];
-	short available_actions_length;
-	short winner;
+void run(struct Node** map, short* board, bool train, int times, bool plot)
+{
+    short available_actions[ACTION_NUM];
+    short available_actions_length;
+    short winner;
     short choice, opponent_choice;
     char state[BIGNUM_LEN], _state[BIGNUM_LEN];
     float estimate_r, estimate_r_, real_r, r, opponent_r;
@@ -204,7 +208,7 @@ void run(struct Node **map, short *board, bool train, int times, bool plot){
     for (int episode = 0; episode < times; episode++) {
         reset(board);
         state_hash(board, state);
-        while (1){
+        while (1) {
             // bot choose the action
             choice = bot_choose_action(map, board, state);
             a.loc = choice;
@@ -212,7 +216,7 @@ void run(struct Node **map, short *board, bool train, int times, bool plot){
 
             search(map, state, &find, state_weights);
             if (!find) {
-                for (short i=0; i<ACTION_NUM; i++){
+                for (short i = 0; i < ACTION_NUM; i++) {
                     state_weights[i] = 0.0;
                 }
                 if (train)
@@ -220,16 +224,18 @@ void run(struct Node **map, short *board, bool train, int times, bool plot){
             }
             estimate_r = state_weights[choice];
             act(board, &a, _state, &r, &opponent_r, &winner);
-            if (plot) show(board);
+            if (plot)
+                show(board);
 
             // // opponent random
-            if (winner == 0){
+            if (winner == 0) {
                 opponent_choice = opponent_random_action(board);
-                if (opponent_choice != -1){
+                if (opponent_choice != -1) {
                     a.loc = opponent_choice;
                     a.player = OPPONENT_SYMBOL;
                     act(board, &a, _state, &opponent_r, &r, &winner);
-                    if (plot) show(board);
+                    if (plot)
+                        show(board);
                 }
             }
             get_available_actions(board, available_actions, &available_actions_length);
@@ -244,17 +250,16 @@ void run(struct Node **map, short *board, bool train, int times, bool plot){
                 estimate_r_ = get_estimate_reward(map, board, _state);
                 real_r = r + LAMBDA * estimate_r_;
             }
-            if (train){
+            if (train) {
                 state_weights[choice] += (LR * (real_r - estimate_r));
                 update(map, state, choice, state_weights[choice]);
             }
-            for (int i=0; i<BIGNUM_LEN; i++){
+            for (int i = 0; i < BIGNUM_LEN; i++) {
                 state[i] = _state[i];
             }
 
-
-            if ((winner != 0) || (available_actions_length == 0)){
-                if (winner == 1){
+            if ((winner != 0) || (available_actions_length == 0)) {
+                if (winner == 1) {
                     win += 1;
                 }
                 break;
@@ -264,5 +269,5 @@ void run(struct Node **map, short *board, bool train, int times, bool plot){
 
     if (!train)
         // printf("%d/%d, %f\%\n", win, 10000, (float)win/10000);
-        printf("%f\n", (float)win/times);
+        printf("%f\n", (float)win / times);
 }

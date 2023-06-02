@@ -5,6 +5,7 @@
 #include <math.h>
 #include <stdio.h>
 
+// 3^n, for calculate state hash
 struct BigNum POWs[42] = {
     "0000000000000000000001", "0000000000000000000003", "0000000000000000000009", "0000000000000000000027", "0000000000000000000081",
     "0000000000000000000243", "0000000000000000000729", "0000000000000000002187", "0000000000000000006561", "0000000000000000019683",
@@ -20,8 +21,8 @@ struct BigNum POWs[42] = {
 /*
     Reset the game, clear the chessboard.
 
-        Args:
-                - short *board (array's start address): chessboard's status
+    Args:
+        - short *board (array's start address): chessboard's status
 
     Results:
         - None, set all blocks on the chessboard to zero.
@@ -107,13 +108,13 @@ short get_loc_status(short* board, short row, short col)
 }
 
 /*
-        Return winner's number;
+    Return winner's number;
 
     Args:
         - short *board (array's address): chessboard's status
 
-        Results:
-                - short winner_number(integer): winner's number, 0 for no winner now, 1 for Bot, 2 for opponent
+    Results:
+        - short winner_number(integer): winner's number, 0 for no winner now, 1 for Bot, 2 for opponent
 
     board's coodinate diagram
                                 ^
@@ -175,11 +176,11 @@ short get_winner(short* board)
     Hash chesstable's status into hash.
 
         Args:
-                - short *board (array's address): chessboard's status
-        - char *hash (a string): size is BIGNUM_LEN, the hash will be wrote here
+            - short *board (array's address): chessboard's status
+            - char *hash (a string): size is BIGNUM_LEN, the hash will be wrote here
 
         Results:
-                - None.
+            - None.
 */
 void state_hash(short* board, char* hash)
 {
@@ -189,16 +190,8 @@ void state_hash(short* board, char* hash)
     }
 
     for (short i = 0; i < (ROW_NUM * COL_NUM); i++) {
-        // printf("MUL:\n");
-        // printf("%s\n", POWs[i].num);
         temp = mul(POWs[i], board[i]);
-        // printf("%s\n\n", temp.num);
-
-        // printf("ADD:\n");
-        // printf("%s\n", sum.num);
-        // printf("%s\n", temp.num);
         sum = add(sum, temp);
-        // printf("%s\n\n", sum.num);
     }
 
     for (int i = 0; i < BIGNUM_LEN; i++) {
@@ -220,7 +213,6 @@ void fall(short* board, struct action* a)
 {
     short* ptr = (board + ROW_NUM * COL_NUM - 1 - (a->loc));
     while ((*ptr == 0) && (ptr >= board)) {
-        // printf("%d ", *ptr);
         ptr -= COL_NUM;
     }
     *(ptr + COL_NUM) = a->player;
@@ -229,20 +221,19 @@ void fall(short* board, struct action* a)
 /*
     Act on the chessboard.
 
-        Args:
-                - short *board (array's address): chessboards' status
-                - struct action *a (a action's pointer): include player & choose loc
-                - char *state (a string): for return. To save the chessboard's state hash which after doing this action
-                - float *reward (pointer): for return. To save the number of rewards which the player gets after doing this action.
-                - float *opponent_reward (pointer): for return. To save the number of rewards which the opponents gets after the player doing this action.
-                - short *winner (pointer): for return. To save the winner in this action. If haven't finish, it will be zero.
+    Args:
+        - short *board (array's address): chessboards' status
+        - struct action *a (a action's pointer): include player & choose loc
+        - char *state (a string): for return. To save the chessboard's state hash which after doing this action
+        - float *reward (pointer): for return. To save the number of rewards which the player gets after doing this action.
+        - float *opponent_reward (pointer): for return. To save the number of rewards which the opponents gets after the player doing this action.
+        - short *winner (pointer): for return. To save the winner in this action. If haven't finish, it will be zero.
 
     Results:
         - None. Save in state & reward & winner
 */
 void act(short* board, struct action* a, char* state, float* reward, float* opponent_reward, short* winner)
 {
-    // printf("Act( player=%d, action=%d )\n", a->player, a->loc);
     assert(board[(ROW_NUM * COL_NUM - 1) - (a->loc)] == 0);
 
     fall(board, a);

@@ -3,6 +3,15 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+/*
+    Transform long long to BigNum struct.
+
+    Args:
+        - long long num: from
+
+    Results:
+        - struct BigNum ans
+*/
 struct BigNum long_to_BigNum(long long num)
 {
     struct BigNum ans;
@@ -15,6 +24,16 @@ struct BigNum long_to_BigNum(long long num)
     return ans;
 }
 
+/*
+    Add 2 BigNum struct.
+
+    Args:
+        - struct BigNum a
+        - struct BigNum b
+
+    Results:
+        - struct BigNum ans: ans is a + b
+*/
 struct BigNum add(struct BigNum a, struct BigNum b)
 {
     struct BigNum ans;
@@ -29,6 +48,16 @@ struct BigNum add(struct BigNum a, struct BigNum b)
     return ans;
 }
 
+/*
+    Multiply a by units digit integer b
+
+    Args:
+        - struct BigNum a
+        - int b: b must be an integer representing the units digit
+
+    Results:
+        - struct BigNum ans: ans is a * b
+*/
 struct BigNum mul(struct BigNum a, int b)
 {
     struct BigNum ans;
@@ -39,7 +68,6 @@ struct BigNum mul(struct BigNum a, int b)
         carry = s / 10;
         s %= 10;
         ans.num[i] = (char)(s + 48);
-        // printf("index(%hd): %c\n", i, (char)(s+48));
     }
 
     return ans;

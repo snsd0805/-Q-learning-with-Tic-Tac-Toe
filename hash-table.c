@@ -6,6 +6,15 @@
 #include <string.h>
 #include <time.h>
 
+/*
+    djb2 hash algorithm for hash table
+
+    Args:
+        - char* key (string): State Hash for chessboard, It is a string of size BIGNUM_LEN in this project.
+
+    Results:
+        - long long hash: for indexing in the hash table
+*/
 long long hash_function(char* key)
 {
     long long hash = 0;
@@ -15,6 +24,16 @@ long long hash_function(char* key)
     return hash;
 }
 
+/*
+    Insert a node in the hash table, and initilize the array(value) in the nodes to zeros.
+
+    Args:
+        - struct Node** table(Node pointer array): hash table's start address
+        - char* key (string): State hash for the chessboard
+
+    Results:
+        - None. Only link a new node in the hash table. All value in the node's arrays is zeros.
+*/
 void insert(struct Node** table, char* key)
 {
     long long hash = hash_function(key);
@@ -42,6 +61,18 @@ void insert(struct Node** table, char* key)
     }
 }
 
+/*
+    Get node's array's value in the hash table.
+
+    Args:
+        - struct Node** table(Node pointer array): hash table's start address
+        - char* key (string): State hash for the chessboard
+        - bool* find: whether find this node in the hash table.
+        - float* ans: if find this node, this function will put it's value(array) in this variable.
+
+    Results:
+        - None
+*/
 void search(struct Node** table, char* key, bool* find, float* ans)
 {
     long long hash = hash_function(key);
@@ -66,6 +97,18 @@ void search(struct Node** table, char* key, bool* find, float* ans)
     }
 }
 
+/*
+    Update node's array's value in the hash table.
+
+    Args:
+        - struct Node** table(Node pointer array): hash table's start address
+        - char* key (string): State hash for the chessboard
+        - short action: which column in this node's array will be changed.
+        - float value: target value.
+
+    Results:
+        - None
+*/
 void update(struct Node** table, char* key, short action, float value)
 {
     long long hash = hash_function(key);

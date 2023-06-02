@@ -20,8 +20,8 @@ struct BigNum POWs[42] = {
 /*
     Reset the game, clear the chessboard.
 
-        Args:
-                - short *board (array's start address): chessboard's status
+    Args:
+        - short *board (array's start address): chessboard's status
 
     Results:
         - None, set all blocks on the chessboard to zero.
@@ -107,13 +107,13 @@ short get_loc_status(short* board, short row, short col)
 }
 
 /*
-        Return winner's number;
+    Return winner's number;
 
     Args:
         - short *board (array's address): chessboard's status
 
-        Results:
-                - short winner_number(integer): winner's number, 0 for no winner now, 1 for Bot, 2 for opponent
+    Results:
+        - short winner_number(integer): winner's number, 0 for no winner now, 1 for Bot, 2 for opponent
 
     board's coodinate diagram
                                 ^
@@ -174,12 +174,12 @@ short get_winner(short* board)
 /*
     Hash chesstable's status into hash.
 
-        Args:
-                - short *board (array's address): chessboard's status
+    Args:
+        - short *board (array's address): chessboard's status
         - char *hash (a string): size is BIGNUM_LEN, the hash will be wrote here
 
-        Results:
-                - None.
+    Results:
+        - None.
 */
 void state_hash(short* board, char* hash)
 {
@@ -229,13 +229,13 @@ void fall(short* board, struct action* a)
 /*
     Act on the chessboard.
 
-        Args:
-                - short *board (array's address): chessboards' status
-                - struct action *a (a action's pointer): include player & choose loc
-                - char *state (a string): for return. To save the chessboard's state hash which after doing this action
-                - float *reward (pointer): for return. To save the number of rewards which the player gets after doing this action.
-                - float *opponent_reward (pointer): for return. To save the number of rewards which the opponents gets after the player doing this action.
-                - short *winner (pointer): for return. To save the winner in this action. If haven't finish, it will be zero.
+    Args:
+        - short *board (array's address): chessboards' status
+        - struct action *a (a action's pointer): include player & choose loc
+        - char *state (a string): for return. To save the chessboard's state hash which after doing this action
+        - float *reward (pointer): for return. To save the number of rewards which the player gets after doing this action.
+        - float *opponent_reward (pointer): for return. To save the number of rewards which the opponents gets after the player doing this action.
+        - short *winner (pointer): for return. To save the winner in this action. If haven't finish, it will be zero.
 
     Results:
         - None. Save in state & reward & winner

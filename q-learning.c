@@ -35,10 +35,10 @@ short float_argmax(float* arr, short length)
     EPSILON means the probability to choose the best action in this state from Q-Table.
     (1-EPSILON) to random an action to do.
 
-        Args:
-                - short *table (array's address): state table for Q-Learning
-                - short *board (array's address): chessboards' status
-                - char *state (string, state hash): hash for board's status
+    Args:
+        - short *table (array's address): state table for Q-Learning
+        - short *board (array's address): chessboards' status
+        - char *state (string, state hash): hash for board's status
 
     Results:
         - short best_choice
@@ -98,7 +98,7 @@ short bot_choose_action(struct Node** map, short* board, char* state)
     Opponent random choose a action to do.
 
     Args:
-                - short *board (array's address): chessboards' status
+        - short *board (array's address): chessboards' status
 
     Results:
         - short choice (integer): random, -1 means no available action to choose

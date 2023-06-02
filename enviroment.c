@@ -3,11 +3,18 @@
 #include <assert.h>
 #include "constant.h"
 #include "enviroment.h"
+#include "bignum.h"
 
-short PATHS[8][3] = {
-	{0, 1, 2}, {3, 4, 5}, {6, 7, 8},
-	{0, 3, 6}, {1, 4, 7}, {2, 5, 8},
-	{0, 4, 8}, {2, 4, 6}
+struct BigNum POWs[42] = {
+    "0000000000000000000001", "0000000000000000000003", "0000000000000000000009", "0000000000000000000027", "0000000000000000000081",
+    "0000000000000000000243", "0000000000000000000729", "0000000000000000002187", "0000000000000000006561", "0000000000000000019683",
+    "0000000000000000059049", "0000000000000000177147", "0000000000000000531441", "0000000000000001594323", "0000000000000004782969",
+    "0000000000000014348907", "0000000000000043046721", "0000000000000129140163", "0000000000000387420489", "0000000000001162261467",
+    "0000000000003486784401", "0000000000010460353203", "0000000000031381059609", "0000000000094143178827", "0000000000282429536481",
+    "0000000000847288609443", "0000000002541865828329", "0000000007625597484987", "0000000022876792454961", "0000000068630377364883",
+    "0000000205891132094649", "0000000617673396283947", "0000001853020188851841", "0000005559060566555523", "0000016677181699666569",
+    "0000050031545098999707", "0000150094635296999121", "0000450283905890997363", "0001350851717672992089", "0004052555153018976267",
+    "0012157665459056928801", "0036472996377170786403"
 };
 
 /*
@@ -123,7 +130,7 @@ short get_winner(short *board){
             b = get_loc_status(board, i, j+1);
             c = get_loc_status(board, i, j+2);
             d = get_loc_status(board, i, j+3);
-            if ((a == b) && (b == c) && (c == d)) {
+            if ((a == b) && (b == c) && (c == d) && (a!=0)) {
                 return a;
             }
 
@@ -132,7 +139,7 @@ short get_winner(short *board){
             b = get_loc_status(board, i+1, j);
             c = get_loc_status(board, i+2, j);
             d = get_loc_status(board, i+3, j);
-            if ((a == b) && (b == c) && (c == d)) {
+            if ((a == b) && (b == c) && (c == d) && (a!=0)) {
                 return a;
             }
 
@@ -141,7 +148,7 @@ short get_winner(short *board){
             b = get_loc_status(board, i+1, j-1);
             c = get_loc_status(board, i+2, j-2);
             d = get_loc_status(board, i+3, j-3);
-            if ((a == b) && (b == c) && (c == d)) {
+            if ((a == b) && (b == c) && (c == d) && (a!=0)) {
                 return a;
             }
 
@@ -150,7 +157,7 @@ short get_winner(short *board){
             b = get_loc_status(board, i+1, j+1);
             c = get_loc_status(board, i+2, j+2);
             d = get_loc_status(board, i+3, j+3);
-            if ((a == b) && (b == c) && (c == d)) {
+            if ((a == b) && (b == c) && (c == d) && (a!=0)) {
                 return a;
             }
         }
@@ -163,19 +170,34 @@ short get_winner(short *board){
 
 	Args:
 		- short *board (array's address): chessboard's status
+        - char *hash (a string): size is BIGNUM_LEN, the hash will be wrote here
 
 	Results:
-		- int hash (integer): chessboard's status in i-th block * pow(3, i)
-
-    =========================================== Use big number ====================================================
+		- None.
 */
-int state_hash(short *board){
-	int base, hash = 0;
-	for (int i=0; i<9; i++){
-		base = pow(3, i);
-		hash += (base * board[i]);
+void state_hash(short *board, char *hash){
+    struct BigNum sum, temp;
+    for (short i=0; i<BIGNUM_LEN; i++){
+        sum.num[i] = '0';
+    }
+
+    for (short i=0; i<(ROW_NUM*COL_NUM); i++) {
+        // printf("MUL:\n");
+        // printf("%s\n", POWs[i].num);
+        temp = mul(POWs[i], board[i]);
+        // printf("%s\n\n", temp.num);
+
+        // printf("ADD:\n");
+        // printf("%s\n", sum.num);
+        // printf("%s\n", temp.num);
+        sum = add(sum, temp);
+        // printf("%s\n\n", sum.num);
+
+    }
+
+	for (int i=0; i<BIGNUM_LEN; i++){
+        hash[i] = sum.num[i];
 	}
-	return hash;
 }
 
 /*
@@ -190,7 +212,7 @@ int state_hash(short *board){
 */
 void fall(short *board, struct action *a) {
     short *ptr = (board + ROW_NUM * COL_NUM - 1 - (a->loc));
-    while (*ptr == 0) {
+    while ((*ptr == 0) && (ptr>=board)) {
         // printf("%d ", *ptr);
         ptr -= COL_NUM;
     }
@@ -203,7 +225,7 @@ void fall(short *board, struct action *a) {
 	Args:
 		- short *board (array's address): chessboards' status
 		- struct action *a (a action's pointer): include player & choose loc
-		- int *state (pointer): for return. To save the chessboard's state hash which after doing this action
+		- char *state (a string): for return. To save the chessboard's state hash which after doing this action
 		- float *reward (pointer): for return. To save the number of rewards which the player gets after doing this action.
 		- float *opponent_reward (pointer): for return. To save the number of rewards which the opponents gets after the player doing this action.
 		- short *winner (pointer): for return. To save the winner in this action. If haven't finish, it will be zero.
@@ -211,13 +233,13 @@ void fall(short *board, struct action *a) {
 	Results:
 		- None. Save in state & reward & winner
 */
-void act(short *board, struct action *a, int *state, float *reward, float *opponent_reward, short *winner){
+void act(short *board, struct action *a, char *state, float *reward, float *opponent_reward, short *winner){
     // printf("Act( player=%d, action=%d )\n", a->player, a->loc);
     assert(board[(ROW_NUM*COL_NUM-1)-(a->loc)] == 0);
 
     fall(board, a);
 	*winner = get_winner(board);
-	// *state = state_hash(board);
+	state_hash(board, state);
 	if (*winner == a->player){
 		*reward = 1.0;
         *opponent_reward = -1.0;

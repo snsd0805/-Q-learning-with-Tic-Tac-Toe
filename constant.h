@@ -12,3 +12,5 @@
 
 #define ROW_NUM 6
 #define COL_NUM 7
+
+#define BIGNUM_LEN 22

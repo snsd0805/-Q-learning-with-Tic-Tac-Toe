@@ -9,3 +9,6 @@
 #define ACTION_NUM 9
 #define EPISODE_NUM 100000
 #define FIRST true
+
+#define ROW_NUM 6
+#define COL_NUM 7

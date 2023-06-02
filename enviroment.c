@@ -14,13 +14,13 @@ short PATHS[8][3] = {
 	Reset the game, clear the chessboard.
 
 	Args:
-		- short *board (array's address): chessboard's status
+		- short *board (array's start address): chessboard's status
 
 	Results:
 		- None, set all blocks on the chessboard to zero.
 */
 void reset(short* board){
-	for (short i=0; i<9; i++)
+	for (short i=0; i<(ROW_NUM*COL_NUM); i++)
 		board[i] = 0;
 }
 
@@ -35,22 +35,23 @@ void reset(short* board){
 */
 void show(short *board){
 	short loc;
-	printf("┼───┼───┼───┼\n");
-	for (short i=0; i<3; i++){
-		printf("│ ");
-		for (short j=0; j<3; j++){
-			loc = 3*i+j;
-			if (board[loc] == 0)
-				printf("  │ ");
-			else if (board[loc] == BOT_SYMBOL)
-				printf("○ │ ");
-			else
-				printf("✕ │ ");
-		}
-		printf("\n");
-		printf("┼───┼───┼───┼\n");
-	}
-	printf("\n\n");
+    for (short i=0; i<COL_NUM; i++){
+        printf("%d ", i);
+    }
+    printf("\n");
+    for (short i=(ROW_NUM*COL_NUM-1); i>=0; i--){
+        if (board[i] == BOT_SYMBOL) {
+            printf("● ");
+        } else if(board[i] == OPPONENT_SYMBOL) {
+            printf("◴ ");
+        } else {
+            printf("◌ ");
+        }
+        if (i%COL_NUM == 0){
+            printf("\n");
+        }
+    }
+    printf("\n\n");
 }
 
 /*
@@ -66,10 +67,31 @@ void show(short *board){
 */
 void get_available_actions(short *board, short *result, short *length){
 	short index = 0;
-	for (int i=0; i<9; i++)
-		if (board[i] == 0)
+	for (int i=0; i<COL_NUM; i++)
+		if (board[(ROW_NUM*COL_NUM-1)-i] == 0)
 			result[index++] = i;
 	*length = index;
+}
+
+/*
+    Get value in the board with validation.
+
+    Args:
+        - short *board (array's start pointer): chessboard's status
+        - short row (integer): loc's row number
+        - short col (integer): loc's col number
+
+    Results:
+        - short value (integer): means the value in chessboard[row][col]
+*/
+short get_loc_status(short *board, short row, short col) {
+    if ((row >= ROW_NUM) || (row < 0)) {
+        return -1;
+    }
+    if ((col >= COL_NUM) || (col < 0)) {
+        return -1;
+    }
+    return board[row*COL_NUM+col];
 }
 
 /*
@@ -80,14 +102,58 @@ void get_available_actions(short *board, short *result, short *length){
 
 	Results:
 		- short winner_number(integer): winner's number, 0 for no winner now, 1 for Bot, 2 for opponent
+
+    board's coodinate diagram
+                                ^
+                                | 5
+                                | 4
+                                | 3
+                                | 2
+                                | 1
+                                | 0
+    <-----------------------------
+      6   5   4   3   2   1   0 |
 */
 short get_winner(short *board){
-	int a, b, c;
-	for (int i=0; i<8; i++){
-		a = PATHS[i][0]; b = PATHS[i][1]; c = PATHS[i][2];
-		if ((board[a] == board[b]) && (board[b] == board[c]) && (board[a] != 0)){
-			return board[a];
-		}
+	short a, b, c, d;
+	for (short i=0; i<ROW_NUM; i++){
+        for (short j=0; j<COL_NUM; j++){
+            // horizontal
+            a = get_loc_status(board, i, j);
+            b = get_loc_status(board, i, j+1);
+            c = get_loc_status(board, i, j+2);
+            d = get_loc_status(board, i, j+3);
+            if ((a == b) && (b == c) && (c == d)) {
+                return a;
+            }
+
+            // vertical
+            a = get_loc_status(board, i, j);
+            b = get_loc_status(board, i+1, j);
+            c = get_loc_status(board, i+2, j);
+            d = get_loc_status(board, i+3, j);
+            if ((a == b) && (b == c) && (c == d)) {
+                return a;
+            }
+
+            // slash (/)
+            a = get_loc_status(board, i, j);
+            b = get_loc_status(board, i+1, j-1);
+            c = get_loc_status(board, i+2, j-2);
+            d = get_loc_status(board, i+3, j-3);
+            if ((a == b) && (b == c) && (c == d)) {
+                return a;
+            }
+
+            // backslash (\)
+            a = get_loc_status(board, i, j);
+            b = get_loc_status(board, i+1, j+1);
+            c = get_loc_status(board, i+2, j+2);
+            d = get_loc_status(board, i+3, j+3);
+            if ((a == b) && (b == c) && (c == d)) {
+                return a;
+            }
+        }
 	}
 	return 0;
 }
@@ -100,6 +166,8 @@ short get_winner(short *board){
 
 	Results:
 		- int hash (integer): chessboard's status in i-th block * pow(3, i)
+
+    =========================================== Use big number ====================================================
 */
 int state_hash(short *board){
 	int base, hash = 0;
@@ -110,6 +178,24 @@ int state_hash(short *board){
 	return hash;
 }
 
+/*
+    Fall the chess on the board.
+
+    Args:
+        - short *board: chessboard
+        - struct action *a (struct pointer): action's loc & player
+
+    Results:
+        - None. Fall chess on the chessboard
+*/
+void fall(short *board, struct action *a) {
+    short *ptr = (board + ROW_NUM * COL_NUM - 1 - (a->loc));
+    while (*ptr == 0) {
+        // printf("%d ", *ptr);
+        ptr -= COL_NUM;
+    }
+    *(ptr+COL_NUM) = a->player;
+}
 
 /*
 	Act on the chessboard.
@@ -127,10 +213,11 @@ int state_hash(short *board){
 */
 void act(short *board, struct action *a, int *state, float *reward, float *opponent_reward, short *winner){
     // printf("Act( player=%d, action=%d )\n", a->player, a->loc);
-    assert(board[a->loc] == 0);
-	board[a->loc] = a->player;
+    assert(board[(ROW_NUM*COL_NUM-1)-(a->loc)] == 0);
+
+    fall(board, a);
 	*winner = get_winner(board);
-	*state = state_hash(board);
+	// *state = state_hash(board);
 	if (*winner == a->player){
 		*reward = 1.0;
         *opponent_reward = -1.0;

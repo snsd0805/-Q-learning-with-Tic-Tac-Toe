@@ -5,6 +5,7 @@
 #include <math.h>
 #include <stdio.h>
 
+// 3^n, for calculate state hash
 struct BigNum POWs[42] = {
     "0000000000000000000001", "0000000000000000000003", "0000000000000000000009", "0000000000000000000027", "0000000000000000000081",
     "0000000000000000000243", "0000000000000000000729", "0000000000000000002187", "0000000000000000006561", "0000000000000000019683",
@@ -189,16 +190,8 @@ void state_hash(short* board, char* hash)
     }
 
     for (short i = 0; i < (ROW_NUM * COL_NUM); i++) {
-        // printf("MUL:\n");
-        // printf("%s\n", POWs[i].num);
         temp = mul(POWs[i], board[i]);
-        // printf("%s\n\n", temp.num);
-
-        // printf("ADD:\n");
-        // printf("%s\n", sum.num);
-        // printf("%s\n", temp.num);
         sum = add(sum, temp);
-        // printf("%s\n\n", sum.num);
     }
 
     for (int i = 0; i < BIGNUM_LEN; i++) {
@@ -220,7 +213,6 @@ void fall(short* board, struct action* a)
 {
     short* ptr = (board + ROW_NUM * COL_NUM - 1 - (a->loc));
     while ((*ptr == 0) && (ptr >= board)) {
-        // printf("%d ", *ptr);
         ptr -= COL_NUM;
     }
     *(ptr + COL_NUM) = a->player;
@@ -242,7 +234,6 @@ void fall(short* board, struct action* a)
 */
 void act(short* board, struct action* a, char* state, float* reward, float* opponent_reward, short* winner)
 {
-    // printf("Act( player=%d, action=%d )\n", a->player, a->loc);
     assert(board[(ROW_NUM * COL_NUM - 1) - (a->loc)] == 0);
 
     fall(board, a);

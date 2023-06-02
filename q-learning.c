@@ -123,35 +123,16 @@ short opponent_random_action(short* board)
     return choice;
 }
 
-//     Use Hash Table, so we needn't initilize Q-Table
-//
-// /*
-//     Inilialize the Q-Table
-
-//     Args:
-//         - float *table (two-dim array's start address)
-
-//     Results:
-//         - None.
-// */
-// void init_table(float *table){
-//     for (int i=0; i<STATE_NUM; i++){
-//         for (int j=0; j<ACTION_NUM; j++){
-//             *(table + i * ACTION_NUM + j) = 0;
-//         }
-//     }
-// }
-
 /*
     Give the chessboard & state, it will return the max reward with the best choice
 
     Args:
-        - float *table (2-dim array's start address)
-        - short *board (1-dim array's start address): chessboard's address
-        - int state (integer): board state's hash
+        - struct Node** map (Hash table for Q-learning)
+        - short *board (array's start address): chessboard's address
+        - char* state (string): board state's hash
 
     Results:
-        - int max_reward
+        - float max_reward
 */
 float get_estimate_reward(struct Node** map, short* board, char* state)
 {
@@ -183,8 +164,8 @@ float get_estimate_reward(struct Node** map, short* board, char* state)
     Run Q-learning Evaluation or Training.
 
     Args:
-        - float *table (2-dim array's start address)
-        - short *board (1-dim array's start address): chessboard's address
+        - struct Node** map (Hash table for Q-learning )
+        - short *board (array's start address): chessboard's address
         - bool train: train or not
         - int times: how many episode to simulate
         - bool plot: whether to plot the gaming process
@@ -227,7 +208,7 @@ void run(struct Node** map, short* board, bool train, int times, bool plot)
             if (plot)
                 show(board);
 
-            // // opponent random
+            // opponent random
             if (winner == 0) {
                 opponent_choice = opponent_random_action(board);
                 if (opponent_choice != -1) {
@@ -240,6 +221,7 @@ void run(struct Node** map, short* board, bool train, int times, bool plot)
             }
             get_available_actions(board, available_actions, &available_actions_length);
 
+            // update Q-Learning Hash Table
             if ((winner != 0) || (available_actions_length == 0)) {
                 if (plot) {
                     printf("winner: %d, reward: %f, oppo reward: %f\n", winner, r, opponent_r);
@@ -254,10 +236,13 @@ void run(struct Node** map, short* board, bool train, int times, bool plot)
                 state_weights[choice] += (LR * (real_r - estimate_r));
                 update(map, state, choice, state_weights[choice]);
             }
+
+            // update state
             for (int i = 0; i < BIGNUM_LEN; i++) {
                 state[i] = _state[i];
             }
 
+            // winning counter
             if ((winner != 0) || (available_actions_length == 0)) {
                 if (winner == 1) {
                     win += 1;
@@ -268,6 +253,5 @@ void run(struct Node** map, short* board, bool train, int times, bool plot)
     }
 
     if (!train)
-        // printf("%d/%d, %f\%\n", win, 10000, (float)win/10000);
         printf("%f\n", (float)win / times);
 }

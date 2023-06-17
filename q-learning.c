@@ -255,3 +255,150 @@ void run(struct Node** map, short* board, bool train, int times, bool plot)
     if (!train)
         printf("%f\n", (float)win / times);
 }
+
+/*
+    Run Q-learning Evaluation or Training.
+
+    Args:
+        - struct Node** map (Hash table for Q-learning )
+        - short *board (array's start address): chessboard's address
+        - bool train: train or not
+        - int times: how many episode to simulate
+        - bool plot: whether to plot the gaming process
+
+    Results:
+        - None
+*/
+void run_adversarial(struct Node** map, struct Node** oppo_map, short* board, bool train, int times, bool plot)
+{
+    short available_actions[ACTION_NUM];
+    short available_actions_length;
+    short winner;
+    short choice, opponent_choice;
+    char state[BIGNUM_LEN], state_[BIGNUM_LEN], oppo_state[BIGNUM_LEN], oppo_state_[BIGNUM_LEN];
+    float estimate_r, estimate_r_, real_r, r, opponent_r, oppo_real_r, oppo_estimate_r_, oppo_estimate_r;
+    struct action a;
+    float state_weights[ACTION_NUM], oppo_state_weights[ACTION_NUM];
+    bool find, isFirst;
+    int win = 0, loss = 0;
+
+    for (int episode = 0; episode < times; episode++) {
+        reset(board);
+        state_hash(board, state);
+        isFirst = true;
+        while (1) {
+            // bot choose the action
+            choice = bot_choose_action(map, board, state);
+            a.loc = choice;
+            a.player = BOT_SYMBOL;
+
+            search(map, state, &find, state_weights);
+            if (!find) {
+                for (short i = 0; i < ACTION_NUM; i++) {
+                    state_weights[i] = 0.0;
+                }
+                if (train){
+                    // printf("Insert State: %s\n", state);
+                    insert(map, state);
+                }
+            }
+            estimate_r = state_weights[choice];
+            act(board, &a, oppo_state_, &r, &opponent_r, &winner);
+            if (plot)
+                show(board);
+
+            if (isFirst) {
+                for (int i = 0; i < BIGNUM_LEN; i++) {
+                    oppo_state[i] = oppo_state_[i];
+                }
+            }
+
+            if (winner != 0) {                                      // bot 1 win
+                if (plot) {
+                    printf("winner: %d, reward: %f, oppo reward: %f\n", winner, r, opponent_r);
+                    printf("==========================================================\n");
+                }
+                real_r = r;
+                oppo_real_r = opponent_r;
+            } else {
+                // bot 2 actions
+                opponent_choice = bot_choose_action(oppo_map, board, oppo_state);
+                a.loc = opponent_choice;
+                a.player = OPPONENT_SYMBOL;
+                search(oppo_map, oppo_state, &find, oppo_state_weights);
+                if (!find) {
+                    for (short i = 0; i < ACTION_NUM; i++) {
+                        oppo_state_weights[i] = 0.0;
+                    }
+                    if (train){
+                        // printf("Insert oppo State: %s\n", oppo_state);
+                        insert(oppo_map, oppo_state);
+                    }
+                }
+                oppo_estimate_r = oppo_state_weights[opponent_choice];
+                act(board, &a, state_, &opponent_r, &r, &winner);
+                if (plot)
+                    show(board);
+
+                get_available_actions(board, available_actions, &available_actions_length);
+                if (winner != 0 || (available_actions_length == 0)) {
+                    if (plot) {
+                        printf("winner: %d, reward: %f, oppo reward: %f\n", winner, r, opponent_r);
+                        printf("==========================================================\n");
+                    }
+                    real_r = r;
+                    oppo_real_r = opponent_r;
+                } else {
+                    estimate_r_ = get_estimate_reward(map, board, state_);
+                    real_r = r + LAMBDA * estimate_r_;
+                    if(!isFirst){
+                        oppo_estimate_r_ = get_estimate_reward(oppo_map, board, oppo_state_);
+                        oppo_real_r = opponent_r + LAMBDA * oppo_estimate_r_;
+                    }
+                }
+            }
+
+            if (train) {
+                state_weights[choice] += (LR * (real_r - estimate_r));
+                // printf("State: %s\n", state);
+                update(map, state, choice, state_weights[choice]);
+                if(!isFirst){
+                    search(oppo_map, oppo_state, &find, oppo_state_weights);
+                    if (!find) {
+                        for (short i = 0; i < ACTION_NUM; i++) {
+                            oppo_state_weights[i] = 0.0;
+                        }
+                        if (train){
+                            // printf("Insert oppo State: %s\n", oppo_state);
+                            insert(oppo_map, oppo_state);
+                        }
+                    }
+                    oppo_state_weights[opponent_choice] += (LR * (oppo_real_r - oppo_estimate_r));
+                    // printf("State oppo: %s\n", oppo_state);
+                    update(oppo_map, oppo_state, opponent_choice, oppo_state_weights[opponent_choice]);
+                }
+            }
+
+            // update state
+            for (int i = 0; i < BIGNUM_LEN; i++) {
+                state[i] = state_[i];
+                oppo_state[i] = oppo_state_[i];
+            }
+
+            // winning counter
+            if ((winner != 0) || (available_actions_length == 0)) {
+                // printf("winner: %d, available_len: %d\n", winner, available_actions_length);
+                if (winner == 1) {
+                    win += 1;
+                } else {
+                    loss += 1;
+                }
+                break;
+            }
+            isFirst = false;
+        }
+    }
+
+    if (!train)
+        printf("win: %f\nloss: %f\n", (float)win / times, (float)loss / times);
+}

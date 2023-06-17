@@ -241,12 +241,12 @@ void act(short* board, struct action* a, char* state, float* reward, float* oppo
     state_hash(board, state);
     if (*winner == a->player) {
         *reward = 1.0;
-        *opponent_reward = -1.0;
+        *opponent_reward = -5.0;
     } else if (*winner != 0) {
         *reward = -1.0;
         *opponent_reward = 1.0;
     } else {
-        *reward = 0;
-        *opponent_reward = 0;
+        *reward = 0.0;
+        *opponent_reward = 5.0;
     }
 }

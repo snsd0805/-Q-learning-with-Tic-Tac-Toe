@@ -154,7 +154,6 @@ void merge(struct Node** table, long long hash, char* key, float* value)
 
     if (table[hash] == NULL) {
         table[hash] = node;
-        free(node);
     } else {
         while (temp != NULL) {
             // find key in the table

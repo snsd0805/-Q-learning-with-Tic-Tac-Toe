@@ -15,3 +15,5 @@
 
 #define BIGNUM_LEN 22
 #define TABLE_SIZE 1000000000
+
+#define MPI_MASTER 0

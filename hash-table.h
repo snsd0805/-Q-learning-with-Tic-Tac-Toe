@@ -11,3 +11,4 @@ long long hash_function(char* key);
 void insert(struct Node** table, char* key);
 void search(struct Node** table, char* key, bool* find, float* ans);
 void update(struct Node** table, char* key, short action, float value);
+void merge(struct Node** table, long long hash, char* key, float* value);

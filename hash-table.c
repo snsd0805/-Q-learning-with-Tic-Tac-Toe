@@ -152,14 +152,14 @@ void merge(struct Node** table, long long hash, char* key, float* value)
         node->value[i] = value[i];
     }
 
-    if (table[hash] == NULL) {
-        table[hash] = node;
+    if (temp == NULL) {
+        temp = node;
     } else {
         while (temp != NULL) {
             // find key in the table
             if (strcmp(temp->key, node->key) == 0) {
                 for (short i = 0; i < ACTION_NUM; i++) {
-                    table[hash]->value[i] += node->value[i];
+                    temp->value[i] += node->value[i];
                 }
                 free(node);
                 return;
@@ -168,6 +168,6 @@ void merge(struct Node** table, long long hash, char* key, float* value)
             temp = temp->next;
         }
         // key is not in the table
-        past->next = node;
+        temp = node;
     }
 }

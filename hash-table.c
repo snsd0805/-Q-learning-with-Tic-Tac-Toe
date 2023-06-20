@@ -154,6 +154,7 @@ void merge(struct Node** table, long long hash, char* key, float* value)
 
     if (table[hash] == NULL) {
         table[hash] = node;
+        free(node);
     } else {
         while (temp != NULL) {
             // find key in the table
@@ -161,12 +162,13 @@ void merge(struct Node** table, long long hash, char* key, float* value)
                 for (short i = 0; i < ACTION_NUM; i++) {
                     table[hash]->value[i] += node->value[i];
                 }
+                free(node);
                 return;
             }
             past = temp;
             temp = temp->next;
         }
         // key is not in the table
-        past -> next = node;
+        past->next = node;
     }
 }

@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
         char key[BIGNUM_LEN];
         float value[ACTION_NUM];
         for (int i = 0; i < TABLE_SIZE; i++) {
-            for (int j = 0; j < size; j++) {
+            for (int j = MPI_MASTER + 1; j < size; j++) {
                 while (1) {
                     MPI_Recv(node_exist, 1, MPI_C_BOOL, j, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                     if (!node_exist[0])

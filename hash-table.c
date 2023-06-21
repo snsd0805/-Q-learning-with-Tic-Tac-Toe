@@ -156,7 +156,7 @@ void merge(struct Node** table, struct Node* node)
     } else {
         while (temp != NULL) {
             // find key in the table
-            if (strcmp(temp->key, node->key) == 0) {
+            if (strcmp(temp->key, new_node->key) == 0) {
                 for (short i = 0; i < ACTION_NUM; i++) {
                     temp->value[i] += new_node->value[i];
                 }

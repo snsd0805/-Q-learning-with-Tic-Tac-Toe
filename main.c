@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 int main(int argc, char* argv[])
@@ -13,6 +14,10 @@ int main(int argc, char* argv[])
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    // For mpi stop send/receive message
+    const char stop[BIGNUM_LEN] = "STOP";
+    float empty_value[ACTION_NUM] = {};
 
     short board[ROW_NUM][COL_NUM] = { 0 };
     short winner;
@@ -35,36 +40,34 @@ int main(int argc, char* argv[])
     run(map, &board[0][0], true, EPISODE_NUM / size, false);
     // Merge the map
     if (rank == MPI_MASTER) {
-        bool node_exist[1];
         char key[BIGNUM_LEN];
         float value[ACTION_NUM];
-        for (int i = 0; i < TABLE_SIZE; i++) {
-            for (int j = MPI_MASTER + 1; j < size; j++) {
-                while (1) {
-                    MPI_Recv(node_exist, 1, MPI_C_BOOL, j, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                    if (!node_exist[0])
-                        break;
-                    MPI_Recv(key, BIGNUM_LEN, MPI_CHAR, j, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                    MPI_Recv(value, ACTION_NUM, MPI_FLOAT, j, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                    merge(map, i, key, value);
+        unsigned char stop_count = size - 1;
+        while (1) {
+            MPI_Recv(key, BIGNUM_LEN, MPI_CHAR, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(value, ACTION_NUM, MPI_FLOAT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            if (strcmp(key, stop) == 0) {
+                stop_count--;
+                if (stop_count <= 0) {
+                    break;
                 }
+            } else {
+                merge(map, key, value);
             }
         }
     } else {
+        MPI_Request request;
         struct Node* temp;
-        bool node_exist[1];
         for (int i = 0; i < TABLE_SIZE; i++) {
             temp = map[i];
-            node_exist[0] = true;
             while (temp) {
-                MPI_Send(node_exist, 1, MPI_C_BOOL, MPI_MASTER, 0, MPI_COMM_WORLD);
-                MPI_Send(temp->key, BIGNUM_LEN, MPI_CHAR, MPI_MASTER, 0, MPI_COMM_WORLD);
-                MPI_Send(temp->value, ACTION_NUM, MPI_FLOAT, MPI_MASTER, 0, MPI_COMM_WORLD);
+                MPI_Isend(temp->key, BIGNUM_LEN, MPI_CHAR, MPI_MASTER, 0, MPI_COMM_WORLD, &request);
+                MPI_Isend(temp->value, ACTION_NUM, MPI_FLOAT, MPI_MASTER, 0, MPI_COMM_WORLD, &request);
                 temp = temp->next;
             }
-            node_exist[0] = false;
-            MPI_Send(node_exist, 1, MPI_C_BOOL, MPI_MASTER, 0, MPI_COMM_WORLD);
         }
+        MPI_Isend(stop, BIGNUM_LEN, MPI_CHAR, MPI_MASTER, 0, MPI_COMM_WORLD, &request);
+        MPI_Isend(empty_value, ACTION_NUM, MPI_FLOAT, MPI_MASTER, 0, MPI_COMM_WORLD, &request);
     }
 
     if (rank == MPI_MASTER) {

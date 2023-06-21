@@ -139,8 +139,9 @@ void update(struct Node** table, char* key, short action, float value)
     Results:
         - None
 */
-void merge(struct Node** table, long long hash, char* key, float* value)
+void merge(struct Node** table, char* key, float* value)
 {
+    long long hash = hash_function(key);
     struct Node* node = malloc(sizeof(struct Node));
     struct Node *temp, *past;
     strcpy(node->key, key);

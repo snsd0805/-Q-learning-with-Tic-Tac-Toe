@@ -14,7 +14,7 @@
 #define COL_NUM 7
 
 #define BIGNUM_LEN 22
-#define TABLE_SIZE 1000000000
+#define TABLE_SIZE 100000000
 
 #define MPI_MASTER 0
 #define STOP_MESSAGE "STOP"

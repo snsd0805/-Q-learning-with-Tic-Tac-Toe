@@ -63,17 +63,16 @@ int main(int argc, char* argv[])
         free(node);
     } else {
         MPI_Request request;
-        // struct Node* temp;
         for (int i = 0; i < TABLE_SIZE; i++) {
             node = map[i];
             while (node) {
-                MPI_Isend(node, 1, TYPE_NODE, MPI_MASTER, 0, MPI_COMM_WORLD, &request);
+                MPI_Send(node, 1, TYPE_NODE, MPI_MASTER, 0, MPI_COMM_WORLD);
                 node = node->next;
             }
         }
         node = malloc(sizeof(struct Node));
         strcpy(node->key, STOP_MESSAGE);
-        MPI_Isend(node, 1, TYPE_NODE, MPI_MASTER, 0, MPI_COMM_WORLD, &request);
+        MPI_Send(node, 1, TYPE_NODE, MPI_MASTER, 0, MPI_COMM_WORLD);
         free(node);
     }
 

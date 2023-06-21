@@ -17,3 +17,4 @@
 #define TABLE_SIZE 1000000000
 
 #define MPI_MASTER 0
+#define STOP_MESSAGE "STOP"

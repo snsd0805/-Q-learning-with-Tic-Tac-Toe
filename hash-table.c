@@ -128,47 +128,45 @@ void update(struct Node** table, char* key, short action, float value)
 }
 
 /*
-    Merge the value into table
+    Merge the node into table
 
     Args:
         - struct Node** table(Node pointer array): hash table's start address
-        - long long hash: hash value
-        - char* key (string): State hash for the chessboard
-        - float* value: The value array going to be merged
+        - struct Node* node: node pointer, containing key and value
 
     Results:
         - None
 */
-void merge(struct Node** table, char* key, float* value)
+void merge(struct Node** table, struct Node* node)
 {
-    long long hash = hash_function(key);
-    struct Node* node = malloc(sizeof(struct Node));
+    long long hash = hash_function(node->key);
+    struct Node* new_node = malloc(sizeof(struct Node));
     struct Node *temp, *past;
-    strcpy(node->key, key);
+    strcpy(new_node->key, node->key);
     // init
     temp = table[hash];
     past = NULL;
-    node->next = NULL;
+    new_node->next = NULL;
     for (short i = 0; i < ACTION_NUM; i++) {
-        node->value[i] = value[i];
+        new_node->value[i] = node->value[i];
     }
 
     if (temp == NULL) {
-        temp = node;
+        temp = new_node;
     } else {
         while (temp != NULL) {
             // find key in the table
             if (strcmp(temp->key, node->key) == 0) {
                 for (short i = 0; i < ACTION_NUM; i++) {
-                    temp->value[i] += node->value[i];
+                    temp->value[i] += new_node->value[i];
                 }
-                free(node);
+                free(new_node);
                 return;
             }
             past = temp;
             temp = temp->next;
         }
         // key is not in the table
-        temp = node;
+        temp = new_node;
     }
 }

@@ -3,6 +3,7 @@
 #include "q-learning.h"
 #include <mpi.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,13 +16,19 @@ int main(int argc, char* argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    // For mpi stop send/receive message
-    const char stop[BIGNUM_LEN] = "STOP";
-    float empty_value[ACTION_NUM] = {};
+    int blocklen[3] = { BIGNUM_LEN + 1, ACTION_NUM, 0 };
+    MPI_Aint disps[3] = { offsetof(struct Node, key), offsetof(struct Node, value), offsetof(struct Node, next) };
+    // next is pointer, but there is no data type pointer for MPI
+    // data type long should be same as pointer
+    MPI_Datatype oldtypes[3] = { MPI_INT, MPI_FLOAT, MPI_LONG };
+    MPI_Datatype TYPE_NODE;
+    MPI_Type_create_struct(3, blocklen, disps, oldtypes, &TYPE_NODE);
+    MPI_Type_commit(&TYPE_NODE);
 
     short board[ROW_NUM][COL_NUM] = { 0 };
     short winner;
     struct Node** map; // pointer to pointer, hash table
+    struct Node* node;
     bool find;
     float state[ACTION_NUM];
 
@@ -40,34 +47,34 @@ int main(int argc, char* argv[])
     run(map, &board[0][0], true, EPISODE_NUM / size, false);
     // Merge the map
     if (rank == MPI_MASTER) {
-        char key[BIGNUM_LEN];
-        float value[ACTION_NUM];
+        node = malloc(sizeof(struct Node));
         unsigned char stop_count = size - 1;
         while (1) {
-            MPI_Recv(key, BIGNUM_LEN, MPI_CHAR, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            MPI_Recv(value, ACTION_NUM, MPI_FLOAT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            if (strcmp(key, stop) == 0) {
+            MPI_Recv(node, 1, TYPE_NODE, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            if (strcmp(node->key, STOP_MESSAGE) == 0) {
                 stop_count--;
                 if (stop_count <= 0) {
                     break;
                 }
             } else {
-                merge(map, key, value);
+                merge(map, node);
             }
         }
+        free(node);
     } else {
         MPI_Request request;
-        struct Node* temp;
+        // struct Node* temp;
         for (int i = 0; i < TABLE_SIZE; i++) {
-            temp = map[i];
-            while (temp) {
-                MPI_Isend(temp->key, BIGNUM_LEN, MPI_CHAR, MPI_MASTER, 0, MPI_COMM_WORLD, &request);
-                MPI_Isend(temp->value, ACTION_NUM, MPI_FLOAT, MPI_MASTER, 0, MPI_COMM_WORLD, &request);
-                temp = temp->next;
+            node = map[i];
+            while (node) {
+                MPI_Isend(node, 1, TYPE_NODE, MPI_MASTER, 0, MPI_COMM_WORLD, &request);
+                node = node->next;
             }
         }
-        MPI_Isend(stop, BIGNUM_LEN, MPI_CHAR, MPI_MASTER, 0, MPI_COMM_WORLD, &request);
-        MPI_Isend(empty_value, ACTION_NUM, MPI_FLOAT, MPI_MASTER, 0, MPI_COMM_WORLD, &request);
+        node = malloc(sizeof(struct Node));
+        strcpy(node->key, STOP_MESSAGE);
+        MPI_Isend(node, 1, TYPE_NODE, MPI_MASTER, 0, MPI_COMM_WORLD, &request);
+        free(node);
     }
 
     if (rank == MPI_MASTER) {

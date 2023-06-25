@@ -1,6 +1,7 @@
 #include "constant.h"
 #include "enviroment.h"
 #include "q-learning.h"
+#include <ctype.h>
 #include <mpi.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -8,10 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <ctype.h>
-void test_board(int rank,int size,struct Node** map,short* board);
-void train_board(int rank,int size,struct Node** map,short* board);
-void play_board(int rank,int size,struct Node** map,short* board);
+void test_board(int rank, int size, struct Node** map, short* board);
+void train_board(int rank, int size, struct Node** map, short* board);
+void play_board(int rank, int size, struct Node** map, short* board);
 int main(int argc, char* argv[])
 {
     int rank, size;
@@ -44,44 +44,39 @@ int main(int argc, char* argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     int command;
-    
-    if (rank == MPI_MASTER) 
-    {
+
+    if (rank == MPI_MASTER) {
         printf("\nEnter command: \n (1) for test win rate\n (2) for training\n (3) for play\n (4) for stop\n");
-        while(scanf("%d",&command))
-        {
-            MPI_Bcast(&command,1,MPI_INT,0,MPI_COMM_WORLD);
-            if (command==1)
-                test_board(rank,size,map,&board[0][0]);
-            else if (command==2)
-                train_board(rank,size,map,&board[0][0]);
-            else if (command==3)
-                play_board(rank,size,map,&board[0][0]);
-            else if(command==4)
+        while (scanf("%d", &command)) {
+            MPI_Bcast(&command, 1, MPI_INT, 0, MPI_COMM_WORLD);
+            if (command == 1)
+                test_board(rank, size, map, &board[0][0]);
+            else if (command == 2)
+                train_board(rank, size, map, &board[0][0]);
+            else if (command == 3)
+                play_board(rank, size, map, &board[0][0]);
+            else if (command == 4)
                 break;
             printf("\nEnter command: \n (1) for test win rate\n (2) for training\n (3) for play\n (4) for stop\n");
         }
-    }
-    else
-    {
-        while(1)
-        {
-            MPI_Bcast(&command,1,MPI_INT,0,MPI_COMM_WORLD);
-            if (command==2)
-                train_board(rank,size,map,&board[0][0]);
-            if (command==4)
-                    break;
+    } else {
+        while (1) {
+            MPI_Bcast(&command, 1, MPI_INT, 0, MPI_COMM_WORLD);
+            if (command == 2)
+                train_board(rank, size, map, &board[0][0]);
+            if (command == 4)
+                break;
         }
-    }   
+    }
     free(map);
     MPI_Finalize();
 }
-void play_board(int rank,int size,struct Node** map,short* board)
+void play_board(int rank, int size, struct Node** map, short* board)
 {
     if (rank == MPI_MASTER)
-        run(map, board, false, 1, true,true);
+        run(map, board, false, 1, true, true);
 }
-void train_board(int rank,int size,struct Node** map,short* board)
+void train_board(int rank, int size, struct Node** map, short* board)
 {
 
     int blocklen[3] = { BIGNUM_LEN + 1, ACTION_NUM, 0 };
@@ -93,7 +88,7 @@ void train_board(int rank,int size,struct Node** map,short* board)
     MPI_Type_create_struct(3, blocklen, disps, oldtypes, &TYPE_NODE);
     MPI_Type_commit(&TYPE_NODE);
     struct Node* node;
-    run(map, board, true, EPISODE_NUM / size, false,false);
+    run(map, board, true, EPISODE_NUM / size, false, false);
     // Merge the map
     if (rank == MPI_MASTER) {
         node = malloc(sizeof(struct Node));
@@ -126,11 +121,11 @@ void train_board(int rank,int size,struct Node** map,short* board)
     }
 }
 
-void test_board(int rank,int size,struct Node** map,short* board)
+void test_board(int rank, int size, struct Node** map, short* board)
 {
 
     printf("Testing...\n");
     if (rank == MPI_MASTER) {
-        run(map, board, false, 10000, false,false);
+        run(map, board, false, 10000, false, false);
     }
 }

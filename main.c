@@ -12,21 +12,6 @@
 void test_board(int rank,int size,struct Node** map,short* board);
 void train_board(int rank,int size,struct Node** map,short* board);
 void play_board(int rank,int size,struct Node** map,short* board);
-void file_error(const char * const s)
-{
-    fprintf(stderr, "Couldn't open file: %s\n", s);
-    exit(EXIT_FAILURE);
-}
-void read_weights(char *filename,short** board)
-{
-    FILE *fptr;
-    fptr = fopen("fileopen","r");
-    if(!fptr) file_error(filename);
-    for(int i=0;i<ROW_NUM;i++)
-        for(int j=0;j<COL_NUM;j++)
-            scanf("%hd",&board[i][j]);
-}
-
 int main(int argc, char* argv[])
 {
     int rank, size;

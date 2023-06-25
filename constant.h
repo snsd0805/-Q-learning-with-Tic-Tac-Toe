@@ -7,13 +7,14 @@
 
 #define STATE_NUM 19683
 #define ACTION_NUM 7
-#define EPISODE_NUM 1000000
+#define EPISODE_NUM 10000
 #define FIRST true
 
 #define ROW_NUM 6
 #define COL_NUM 7
 
 #define BIGNUM_LEN 22
-#define TABLE_SIZE 1000000000
+#define TABLE_SIZE 100000000
 
 #define MPI_MASTER 0
+#define STOP_MESSAGE "STOP"

@@ -16,3 +16,12 @@ make
 ```
 make run
 ```
+
+
+### Program mode
+1. Test Mode
+    + Test the current win rate
+2. Train Mode
+    + Train the model to increase the win rate
+3. Play Mode
+    + Play with the robot you trained

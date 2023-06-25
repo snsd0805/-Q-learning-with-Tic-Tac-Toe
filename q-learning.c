@@ -122,6 +122,41 @@ short opponent_random_action(short* board)
 
     return choice;
 }
+/*
+    Opponent random choose a action to do.
+
+    Args:
+        - short *board (array's address): chessboards' status
+
+    Results:
+        - short choice (integer): random, -1 means no available action to choose
+*/
+short opponent_player_action(short* board)
+{
+
+    // get available actions for choosing
+    short available_actions[ACTION_NUM];
+    short available_action_length;
+    get_available_actions(board, available_actions, &available_action_length);
+
+    if (available_action_length == 0) {
+        return -1;
+    }
+
+    // random
+    short choice;
+    while(1)
+    {
+        printf("Enter the col you want to play:");
+        scanf("%hd",&choice);
+        if (board[(ROW_NUM * COL_NUM - 1) - choice] == 0)
+            break;
+        printf("you can not play here! play another place\n");
+    }
+    printf("\n");
+    return choice;
+}
+
 
 /*
     Give the chessboard & state, it will return the max reward with the best choice
@@ -173,7 +208,7 @@ float get_estimate_reward(struct Node** map, short* board, char* state)
     Results:
         - None
 */
-void run(struct Node** map, short* board, bool train, int times, bool plot)
+void run(struct Node** map, short* board, bool train, int times, bool plot,bool play)
 {
     short available_actions[ACTION_NUM];
     short available_actions_length;
@@ -210,21 +245,32 @@ void run(struct Node** map, short* board, bool train, int times, bool plot)
 
             // opponent random
             if (winner == 0) {
-                opponent_choice = opponent_random_action(board);
+                if(play==0)
+                    opponent_choice = opponent_random_action(board);
+                else
+                    opponent_choice = opponent_player_action(board);
                 if (opponent_choice != -1) {
                     a.loc = opponent_choice;
                     a.player = OPPONENT_SYMBOL;
                     act(board, &a, _state, &opponent_r, &r, &winner);
                     if (plot)
-                        show(board);
+                         show(board);
                 }
             }
             get_available_actions(board, available_actions, &available_actions_length);
 
             // update Q-Learning Hash Table
             if ((winner != 0) || (available_actions_length == 0)) {
-                if (plot) {
+                if (plot&&!play) {
                     printf("winner: %d, reward: %f, oppo reward: %f\n", winner, r, opponent_r);
+                    printf("==========================================================\n");
+                }
+                if(play)
+                {
+                    if(winner==2)
+                        printf("you win!!!!!!\n");
+                    else
+                        printf("you lose QAQ\n");
                     printf("==========================================================\n");
                 }
                 real_r = r;
@@ -252,6 +298,6 @@ void run(struct Node** map, short* board, bool train, int times, bool plot)
         }
     }
 
-    if (!train)
-        printf("%f\n", (float)win / times);
+    if (!train&&!play)
+        printf("The total winrate is: %f\n", (float)win / times);
 }

@@ -7,7 +7,7 @@
 
 #define STATE_NUM 19683
 #define ACTION_NUM 7
-#define EPISODE_NUM 1000000
+#define EPISODE_NUM 10000
 #define FIRST true
 
 #define ROW_NUM 6
